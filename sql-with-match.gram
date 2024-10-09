@@ -13,17 +13,7 @@ WithClause <- 'WITH'i List(WithStatement)
 SelectClause <- 'SELECT'i ('*' / List(AliasedExpression))
 ColumnAliases <- Parens(List(Identifier))
 
-
-#Name <- (Identifier? ':' Identifier) / Identifier
-##Edge <- ('-' / '<-') '[' Name ']' ('-' / '->')
-#Pattern <- (NodePattern / EdgePattern)
-#Column <- 'COLUMNS' Parens(List(AliasedExpression))
 PropertyGraphReference <- 'GRAPH_TABLE'i Parens(Identifier 'MATCH' GraphPattern)
-#EdgePattern <-  '[' Name ']'
-#NodePattern <- '(' Name ')'
-#EdgeDirectionLeft <- '<-' / '-'
-#EdgeDirectionRight <- '->' / '-'
-
 GraphPattern <- List(PathPattern) WhereClause?
 PathPattern <- PathVariableDeclaration? PathPatternPrefix? PathPatternExpression
 PathVariableDeclaration <- Identifier '='

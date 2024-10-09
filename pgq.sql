@@ -58,3 +58,9 @@ FROM GRAPH_TABLE (snb
     MATCH (a:Person)<->(c:Account)
      )
 WHERE p.name = 'Alice';
+
+SELECT owner, SUM(amount)
+FROM GRAPH_TABLE (snb
+    MATCH (a:Person)<->(c:Account), (c:Account)<->(d:Person)
+     )
+WHERE p.name = 'Alice';

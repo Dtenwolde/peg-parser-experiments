@@ -13,7 +13,7 @@ WithClause <- 'WITH'i List(WithStatement)
 SelectClause <- 'SELECT'i ('*' / List(AliasedExpression))
 ColumnAliases <- Parens(List(Identifier))
 
-PropertyGraphReference <- 'GRAPH_TABLE'i Parens(Identifier 'MATCH' GraphPattern)
+PropertyGraphReference <- 'GRAPH_TABLE'i Parens(Identifier 'MATCH'i GraphPattern GraphTableShape)
 GraphPattern <- List(PathPattern) WhereClause?
 PathPattern <- PathVariableDeclaration? PathPatternPrefix? PathPatternExpression
 PathVariableDeclaration <- Identifier '='
@@ -28,6 +28,27 @@ AllShortestPathSearch <- 'ALL'i 'SHORTEST'i PathMode? PathOrPaths?
 AnyShortestPathSearch <- 'ANY'i 'SHORTEST'i PathMode? PathOrPaths?
 CountedShortestPathSearch <- 'SHORTEST'i NumberLiteral PathMode? PathOrPaths?
 CountedShortestGroupSearch <- 'SHORTEST'i NumberLiteral PathMode? PathOrPaths? ('GROUPS'i / 'GROUP'i)?
+
+GraphTableShape <- GraphTableRowsClause? GraphTableColumnsClause? GraphTableExportClause?
+GraphTableRowsClause <- 'ONE'i 'ROW'i 'PER'i 'MATCH'i / OneRowPerIteration
+OneRowPerIteration <- OneRowPerVertex / OneRowPerStep
+OneRowPerVertex <-  'ONE'i 'ROW'i 'PER'i VertexSynonym '(' VertexVariable ')' ? InPathsClause?
+OneRowPerStep <- 'ONE'i 'ROW'i 'PER'i 'STEP'i '(' VertexVariable ',' EdgeVariable ',' VertexVariable ')' InPathsClause?
+InPathsClause <- 'IN'i '(' Identifier (',' Identifier)* ')'
+GraphTableColumnsClause <- 'COLUMNS'i '(' List(AliasedExpression) ')'
+GraphTableExportClause <- 'EXPORT'i 'ALL'i 'SINGLETONS'i ExportExcept? /
+                                                'EXPORT'i 'SINGLETONS'i '(' List(GraphPatternVariable) ')' /
+                                                'EXPORT'i 'NO'i 'SINGLETONS'i
+ExportExcept <- 'EXCEPT'i '(' List(GraphPatternVariable) ')'
+GraphPatternVariable <- ElementVariable / PathOrSubpathVariable
+PathOrSubpathVariable <- PathVariable / SubpathVariable
+PathVariable <- Identifier
+SubpathVariable <- Identifier
+ElementVariable <- Identifier
+VertexVariable <- Identifier
+EdgeVariable <- Identifier
+
+VertexSynonym <- 'VERTEX'i / 'NODE'i
 
 PathPatternExpression <- PathTerm # / PathMultiSetAlternation / PathPatternUnion
 #PathMultiSetAlternation <- PathTerm MultiSetAlternationOperator PathTerm (MultiSetAlternationOperator PathTerm)*

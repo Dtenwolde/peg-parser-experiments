@@ -64,3 +64,35 @@ FROM GRAPH_TABLE (snb
     MATCH (a:Person)<->(c:Account), (c:Account)<->(d:Person)
      )
 WHERE p.name = 'Alice';
+
+
+SELECT owner, SUM(amount)
+FROM GRAPH_TABLE (snb
+      MATCH (a:Person)<->(c:Account), (c:Account)<->(d:Person)
+     COLUMNS(a.name, c, d as foo)
+)
+WHERE p.name = 'Alice';
+
+SELECT owner, SUM(amount)
+FROM GRAPH_TABLE (snb
+      MATCH (a:Person where a.name = 'foo')<->(c:Account), (c:Account)<->(d:Person)
+      COLUMNS(a.name, c, d as foo)
+ )
+WHERE p.name = 'Alice';
+
+SELECT owner, SUM(amount)
+FROM GRAPH_TABLE (snb
+        MATCH (a:Person where a.name = 'foo')<->(c:Account), (c:Account)<->(d:Person)
+        COLUMNS(a.name, c, d as foo)
+        EXPORT NO SINGLETONS
+ )
+WHERE p.name = 'Alice';
+
+SELECT owner, SUM(amount)
+FROM GRAPH_TABLE (snb
+        MATCH (a:Person where a.name = 'foo')<->(c:Account), (c:Account)<->(d:Person)
+        ONE ROW PER MATCH
+        COLUMNS(a.name, c, d as foo)
+        EXPORT NO SINGLETONS
+ )
+WHERE p.name = 'Alice';

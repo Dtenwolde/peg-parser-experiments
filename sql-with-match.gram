@@ -70,8 +70,7 @@ GraphPatternQuantifier <- '*' / '+' / FixedQuantifier / GeneralQuantifier
 FixedQuantifier <- '{' NumberLiteral '}'
 GeneralQuantifier <- '{' NumberLiteral? ',' NumberLiteral? '}'
 
-
-EdgePattern <- AbbreviatedEdgePattern / FullEdgePattern
+EdgePattern <-  FullEdgePattern / AbbreviatedEdgePattern
 FullEdgePattern <-  FullEdgePointingLeft /
                                   FullEdgeUndirected /
                                   FullEdgePointingRight /
@@ -87,12 +86,12 @@ FullEdgeUndirectedOrRight <- '~[' ElementPatternFiller ']~>'
 FullEdgeLeftOrRight <- '<-[' ElementPatternFiller ']->'
 FullEdgeAnyDirection <- '-[' ElementPatternFiller ']-'
 
-AbbreviatedEdgePattern <- '<-' /
+AbbreviatedEdgePattern <- '<->' /
+                                                '<-' /
+                                                '~>' /
                                                 '~' /
                                                 '->' /
                                                 '<~' /
-                                                '~>' /
-                                                '<->' /
                                                 '-'
 
 #ParenthesizedPathPatternExpression <- '(' SubpathVariableDeclaration? PathModePrefix? PathPatternExpression WhereClause? ')'

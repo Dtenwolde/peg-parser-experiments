@@ -47,9 +47,9 @@ PathTermRest <- PathConcatenation / PathFactor PathTermRest?  # Added reference 
 
 PathConcatenation <- PathFactor PathConcatenationRest?
 PathConcatenationRest <- PathFactor PathConcatenationRest?
-PathFactor <- PathPrimary # / QuantifiedPathPrimary / QuestionedPathPrimary
-#QuantifiedPathPrimary <- PathPrimary GraphPatternQuantifier
-#QuestionedPathPrimary <- PathPrimary '?'
+PathFactor <-  QuantifiedPathPrimary / QuestionedPathPrimary / PathPrimary
+QuantifiedPathPrimary <- PathPrimary GraphPatternQuantifier
+QuestionedPathPrimary <- PathPrimary '?'
 PathPrimary <- ElementPattern / Parens(PathPatternExpression) # / SimplifiedPathPatternExpression
 ElementPattern <- VertexPattern / EdgePattern
 VertexPattern <- '(' ElementPatternFiller ')'
@@ -66,8 +66,12 @@ LabelNegation <- '!' LabelPrimary
 LabelPrimary <- LabelName / '%' / Parens(LabelExpression)
 LabelName <- Identifier
 
+GraphPatternQuantifier <- '*' / '+' / FixedQuantifier / GeneralQuantifier
+FixedQuantifier <- '{' NumberLiteral '}'
+GeneralQuantifier <- '{' NumberLiteral? ',' NumberLiteral? '}'
 
-EdgePattern <- FullEdgePattern #/ AbbreviatedEdgePattern
+
+EdgePattern <- AbbreviatedEdgePattern / FullEdgePattern
 FullEdgePattern <-  FullEdgePointingLeft /
                                   FullEdgeUndirected /
                                   FullEdgePointingRight /
@@ -83,13 +87,13 @@ FullEdgeUndirectedOrRight <- '~[' ElementPatternFiller ']~>'
 FullEdgeLeftOrRight <- '<-[' ElementPatternFiller ']->'
 FullEdgeAnyDirection <- '-[' ElementPatternFiller ']-'
 
-#AbbreviatedEdgePattern <- LeftArrow /
-#Tilde /
-#RightArrow /
-#LeftArrowTilde /
-#TildeRightArrow /
-#LeftMinusRight /
-#MinusSign
+AbbreviatedEdgePattern <- '<-' /
+                                                '~' /
+                                                '->' /
+                                                '<~' /
+                                                '~>' /
+                                                '<->' /
+                                                '-'
 
 #ParenthesizedPathPatternExpression <- '(' SubpathVariableDeclaration? PathModePrefix? PathPatternExpression WhereClause? ')'
 #SubpathVariableDeclaration <- Identifier '='

@@ -46,12 +46,12 @@ PathTerm <- PathFactor PathTermRest?
 PathTermRest <- PathConcatenation / PathFactor PathTermRest?  # Added reference to PathConcatenation
 
 PathConcatenation <- PathFactor PathConcatenationRest?
-PathConcatenationRest <- PathFactor PathConcatenationRest?  # Keeps the recursive structure for concatenation
+PathConcatenationRest <- PathFactor PathConcatenationRest?
 PathFactor <- PathPrimary # / QuantifiedPathPrimary / QuestionedPathPrimary
 #QuantifiedPathPrimary <- PathPrimary GraphPatternQuantifier
-#QuestionedPathPrimary <- PathPrimary '?'i
+#QuestionedPathPrimary <- PathPrimary '?'
 PathPrimary <- ElementPattern / Parens(PathPatternExpression) # / SimplifiedPathPatternExpression
-ElementPattern <- VertexPattern #/ EdgePattern
+ElementPattern <- VertexPattern / EdgePattern
 VertexPattern <- '(' ElementPatternFiller ')'
 ElementPatternFiller <- ElementVariableDeclaration? IsLabelExpression? WhereClause?
 ElementVariableDeclaration <- Identifier
@@ -67,21 +67,21 @@ LabelPrimary <- LabelName / '%' / Parens(LabelExpression)
 LabelName <- Identifier
 
 
-#EdgePattern <- FullEdgePattern #/ AbbreviatedEdgePattern
-#FullEdgePattern <-  FullEdgePointingLeft /
-#                                  FullEdgeUndirected /
-#                                  FullEdgePointingRight /
-#                                  FullEdgeLeftOrUndirected /
-#                                  FullEdgeUndirectedOrRight /
-#                                  FullEdgeLeftOrRight /
-#                                  FullEdgeAnyDirection
-#FullEdgePointingLeft <- '<-[' ElementPatternFiller ']-'
-#FullEdgeUndirected <- '~[' ElementPatternFiller ']~'
-#FullEdgePointingRight <- '-[' ElementPatternFiller ']->'
-#FullEdgeLeftOrUndirected <- '<~[' ElementPatternFiller ']~'
-#FullEdgeUndirectedOrRight <- '~[' ElementPatternFiller ']~>'
-#FullEdgeLeftOrRight <- '<-[' ElementPatternFiller ']->'
-#FullEdgeAnyDirection <- '-[' ElementPatternFiller ']-'
+EdgePattern <- FullEdgePattern #/ AbbreviatedEdgePattern
+FullEdgePattern <-  FullEdgePointingLeft /
+                                  FullEdgeUndirected /
+                                  FullEdgePointingRight /
+                                  FullEdgeLeftOrUndirected /
+                                  FullEdgeUndirectedOrRight /
+                                  FullEdgeLeftOrRight /
+                                  FullEdgeAnyDirection
+FullEdgePointingLeft <- '<-[' ElementPatternFiller ']-'
+FullEdgeUndirected <- '~[' ElementPatternFiller ']~'
+FullEdgePointingRight <- '-[' ElementPatternFiller ']->'
+FullEdgeLeftOrUndirected <- '<~[' ElementPatternFiller ']~'
+FullEdgeUndirectedOrRight <- '~[' ElementPatternFiller ']~>'
+FullEdgeLeftOrRight <- '<-[' ElementPatternFiller ']->'
+FullEdgeAnyDirection <- '-[' ElementPatternFiller ']-'
 
 #AbbreviatedEdgePattern <- LeftArrow /
 #Tilde /

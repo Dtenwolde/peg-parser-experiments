@@ -42,8 +42,11 @@ CountedShortestGroupSearch <- 'SHORTEST'i NumberLiteral PathMode? PathOrPaths? (
 PathPatternExpression <- PathTerm # / PathMultiSetAlternation / PathPatternUnion
 #PathMultiSetAlternation <- PathTerm MultiSetAlternationOperator PathTerm (MultiSetAlternationOperator PathTerm)*
 #PathPatternUnion <- PathTerm VerticalBar PathTerm (VerticalBar PathTerm)*
-PathTerm <- PathFactor / PathConcatenation
-PathConcatenation <- PathTerm PathFactor
+PathTerm <- PathFactor PathTermRest?
+PathTermRest <- PathConcatenation / PathFactor PathTermRest?  # Added reference to PathConcatenation
+
+PathConcatenation <- PathFactor PathConcatenationRest?
+PathConcatenationRest <- PathFactor PathConcatenationRest?  # Keeps the recursive structure for concatenation
 PathFactor <- PathPrimary # / QuantifiedPathPrimary / QuestionedPathPrimary
 #QuantifiedPathPrimary <- PathPrimary GraphPatternQuantifier
 #QuestionedPathPrimary <- PathPrimary '?'i
@@ -54,6 +57,16 @@ ElementPatternFiller <- ElementVariableDeclaration? IsLabelExpression? WhereClau
 ElementVariableDeclaration <- Identifier
 IsLabelExpression <- IsOrColon LabelExpression
 IsOrColon <- 'IS'i / ':'
+LabelExpression <- LabelTerm LabelDisjunctionRest?
+LabelDisjunctionRest <- VerticalBar LabelTerm LabelDisjunctionRest? # Handles multiple disjunctions
+LabelTerm <- LabelFactor LabelConjunctionRest?
+LabelConjunctionRest <- '&' LabelFactor LabelConjunctionRest? # Handles multiple conjunctions
+LabelFactor <- LabelPrimary / LabelNegation
+LabelNegation <- '!' LabelPrimary
+LabelPrimary <- LabelName / '%' / Parens(LabelExpression)
+LabelName <- Identifier
+
+
 #EdgePattern <- FullEdgePattern #/ AbbreviatedEdgePattern
 #FullEdgePattern <-  FullEdgePointingLeft /
 #                                  FullEdgeUndirected /
@@ -169,7 +182,7 @@ BooleanOperator <- ('OR'i !'D'i) / 'AND'i # special handling to not match ORDER 
 ComparisionOperator <-  '=' / '<=' / '>=' / '<' / '>'
 WindowOperator <- 'OVER'i
 BetweenOperator <- 'BETWEEN'i
-VerticalBar <- '|'i
+VerticalBar <- '|'
 
 Operator <-
     ArithmeticOperator /

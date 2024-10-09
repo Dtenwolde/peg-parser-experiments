@@ -1,8 +1,5 @@
 Statements <- (SingleStatement (';' SingleStatement )* ';'*)
 
-
-
-
 SingleStatement <- SelectStatement
 SelectStatement <- SimpleSelect (SetopClause SimpleSelect)*
 
@@ -17,10 +14,76 @@ SelectClause <- 'SELECT'i ('*' / List(AliasedExpression))
 ColumnAliases <- Parens(List(Identifier))
 
 
-Name <- (Identifier? ':' Identifier) / Identifier
-Edge <- ('-' / '<-') '[' Name ']' ('-' / '->')
-Pattern <- Parens(Name) Edge Parens(Name)
-PropertyGraphReference <- 'MATCH'i Parens(List(Pattern)) 'ON'i Identifier
+#Name <- (Identifier? ':' Identifier) / Identifier
+##Edge <- ('-' / '<-') '[' Name ']' ('-' / '->')
+#Pattern <- (NodePattern / EdgePattern)
+#Column <- 'COLUMNS' Parens(List(AliasedExpression))
+PropertyGraphReference <- 'GRAPH_TABLE'i Parens(Identifier 'MATCH' GraphPattern)
+#EdgePattern <-  '[' Name ']'
+#NodePattern <- '(' Name ')'
+#EdgeDirectionLeft <- '<-' / '-'
+#EdgeDirectionRight <- '->' / '-'
+
+GraphPattern <- List(PathPattern) WhereClause?
+PathPattern <- PathVariableDeclaration? PathPatternPrefix? PathPatternExpression
+PathVariableDeclaration <- Identifier '='
+PathPatternPrefix <- PathModePrefix / PathSearchPrefix
+PathModePrefix <- PathMode PathOrPaths?
+PathMode <- 'WALK'i / 'TRAIL'i / 'SIMPLE'i / 'ACYCLIC'i
+PathSearchPrefix <- ShortestPathSearch / AllPathSearch / AnyPathSearch
+AllPathSearch <- 'ALL'i PathMode? PathOrPaths?
+AnyPathSearch <- 'ANY'i NumberLiteral? PathMode? PathOrPaths?
+ShortestPathSearch <- AllShortestPathSearch / AnyShortestPathSearch / CountedShortestPathSearch / CountedShortestGroupSearch
+AllShortestPathSearch <- 'ALL'i 'SHORTEST'i PathMode? PathOrPaths?
+AnyShortestPathSearch <- 'ANY'i 'SHORTEST'i PathMode? PathOrPaths?
+CountedShortestPathSearch <- 'SHORTEST'i NumberLiteral PathMode? PathOrPaths?
+CountedShortestGroupSearch <- 'SHORTEST'i NumberLiteral PathMode? PathOrPaths? ('GROUPS'i / 'GROUP'i)?
+
+PathPatternExpression <- PathTerm # / PathMultiSetAlternation / PathPatternUnion
+#PathMultiSetAlternation <- PathTerm MultiSetAlternationOperator PathTerm (MultiSetAlternationOperator PathTerm)*
+#PathPatternUnion <- PathTerm VerticalBar PathTerm (VerticalBar PathTerm)*
+PathTerm <- PathFactor / PathConcatenation
+PathConcatenation <- PathTerm PathFactor
+PathFactor <- PathPrimary # / QuantifiedPathPrimary / QuestionedPathPrimary
+#QuantifiedPathPrimary <- PathPrimary GraphPatternQuantifier
+#QuestionedPathPrimary <- PathPrimary '?'i
+PathPrimary <- ElementPattern / Parens(PathPatternExpression) # / SimplifiedPathPatternExpression
+ElementPattern <- VertexPattern #/ EdgePattern
+VertexPattern <- '(' ElementPatternFiller ')'
+ElementPatternFiller <- ElementVariableDeclaration? IsLabelExpression? WhereClause?
+ElementVariableDeclaration <- Identifier
+IsLabelExpression <- IsOrColon LabelExpression
+IsOrColon <- 'IS'i / ':'
+#EdgePattern <- FullEdgePattern #/ AbbreviatedEdgePattern
+#FullEdgePattern <-  FullEdgePointingLeft /
+#                                  FullEdgeUndirected /
+#                                  FullEdgePointingRight /
+#                                  FullEdgeLeftOrUndirected /
+#                                  FullEdgeUndirectedOrRight /
+#                                  FullEdgeLeftOrRight /
+#                                  FullEdgeAnyDirection
+#FullEdgePointingLeft <- '<-[' ElementPatternFiller ']-'
+#FullEdgeUndirected <- '~[' ElementPatternFiller ']~'
+#FullEdgePointingRight <- '-[' ElementPatternFiller ']->'
+#FullEdgeLeftOrUndirected <- '<~[' ElementPatternFiller ']~'
+#FullEdgeUndirectedOrRight <- '~[' ElementPatternFiller ']~>'
+#FullEdgeLeftOrRight <- '<-[' ElementPatternFiller ']->'
+#FullEdgeAnyDirection <- '-[' ElementPatternFiller ']-'
+
+#AbbreviatedEdgePattern <- LeftArrow /
+#Tilde /
+#RightArrow /
+#LeftArrowTilde /
+#TildeRightArrow /
+#LeftMinusRight /
+#MinusSign
+
+#ParenthesizedPathPatternExpression <- '(' SubpathVariableDeclaration? PathModePrefix? PathPatternExpression WhereClause? ')'
+#SubpathVariableDeclaration <- Identifier '='
+
+
+
+PathOrPaths <- ('PATHS'i / 'PATH'i)
 
 TableReference <-
     PropertyGraphReference /
@@ -54,6 +117,8 @@ ReservedKeyword <-
     'WHEN'i        /
     'JOIN'i        /
     'ON'i /
+    'GRAPH_TABLE'i /
+    'SHORTEST'i /
     'INTERSECT'i # TODO expand on this
 
 PlainIdentifier <-  !ReservedKeyword <[a-z_]i[a-z0-9_]i*>  # unqoted identifier can't be top-level keyword
@@ -104,6 +169,7 @@ BooleanOperator <- ('OR'i !'D'i) / 'AND'i # special handling to not match ORDER 
 ComparisionOperator <-  '=' / '<=' / '>=' / '<' / '>'
 WindowOperator <- 'OVER'i
 BetweenOperator <- 'BETWEEN'i
+VerticalBar <- '|'i
 
 Operator <-
     ArithmeticOperator /

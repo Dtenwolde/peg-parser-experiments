@@ -1,7 +1,7 @@
 all: build
 
 # run `make` there before
-DUCKDB_PREFIX=/Users/hannes/source/duckdb/
+DUCKDB_PREFIX=/Users/dljtw/git/duckdb/
 
 
 build: test_yacc.cpp test_peg.cpp peglib.h #${DUCKDB_PREFIX}/libpg_query/build/libduckdb_pg_query.a
@@ -11,6 +11,9 @@ build: test_yacc.cpp test_peg.cpp peglib.h #${DUCKDB_PREFIX}/libpg_query/build/l
 test: build
 	./test_peg sql.gram all.sql 10
 	./test_yacc all.sql 10
+
+test_pgq: build
+	./test_peg sql-with-match.gram pgq.sql 1
 
 clean:
 	rm -rf test_peg test_yacc

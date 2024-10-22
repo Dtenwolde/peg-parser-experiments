@@ -1,10 +1,15 @@
 Statements <- (SingleStatement (';' SingleStatement )* ';'*)
 
-
-
-SingleStatement <- SelectStatement  
+SingleStatement <- SelectStatement / TransactionStatement / CreateStatement / InsertStatement
 SelectStatement <- SimpleSelect (SetopClause SimpleSelect)*
-
+TransactionStatement <- TransactionType
+CreateStatement <- 'CREATE'i 'TABLE'i Identifier Parens(List(ColumnDefinition))
+InsertStatement <- 'INSERT'i 'INTO'i Identifier (ColumnList)? (ValuesList / SelectStatement)
+ColumnList <- Parens(List(Identifier))
+ValuesList <- 'VALUES'i Value (',' Value)*
+Value <- Parens(List(Expression))
+ColumnDefinition <- Identifier TypeSpecifier
+TransactionType <- 'BEGIN'i 'TRANSACTION'i / 'COMMIT'i / 'ROLLBACK'i
 SetopClause <- ('UNION'i / 'EXCEPT'i / 'INTERSECT'i) 'ALL'i?
 
 SimpleSelect <- WithClause? SelectClause FromClause? WhereClause? GroupByClause? HavingClause? OrderByClause? LimitClause?
@@ -15,8 +20,10 @@ SelectClause <- 'SELECT'i ('*' / List(AliasedExpression))
 ColumnAliases <- Parens(List(Identifier))
 
 TableReference <-
+    (FunctionExpression ('AS'i Identifier)?) /
     (SubqueryReference 'AS'i? Identifier ColumnAliases?) /
-    (Identifier ('AS'i? Identifier)?)
+    (Identifier ('AS'i? Identifier)?) /
+
 
 ExplicitJoin <- ('LEFT'i / 'FULL'i)? 'OUTER'i? 'JOIN'i TableReference 'ON'i Expression
 
@@ -32,23 +39,10 @@ OrderByClause <- 'ORDER'i 'BY'i List(OrderByExpression)
 
 LimitClause <- 'LIMIT'i NumberLiteral
 
-ReservedKeyword <-
-    'SELECT'i      /
-    'FROM'i        /
-    'WHERE'i       /
-    'GROUP'i 'BY'i /
-    'HAVING'i      /
-    'UNION'i       /
-    'ORDER'i 'BY'i /
-    'WHEN'i        /
-    'JOIN'i        /
-    'ON'i /
-    'INTERSECT'i # TODO expand on this
-
 PlainIdentifier <-  !ReservedKeyword <[a-z_]i[a-z0-9_]i*>  # unqoted identifier can't be top-level keyword
 QuotedIdentifier <- '"' [^"]* '"'
 Identifier <- QuotedIdentifier / PlainIdentifier
-NumberLiteral      <- < [+-]?[0-9]*([.][0-9]*)? >
+NumberLiteral <- < [+-]?[0-9]*([.][0-9]*)? >
 StringLiteral <- '\'' [^\']* '\''
 TypeSpecifier <- Identifier (Parens(List(NumberLiteral)))?
 
@@ -87,16 +81,18 @@ SingleExpression <-
     LiteralExpression
 
 ArithmeticOperator <- '+' / '-' / '*' / '/'
+NotOperator <- 'NOT'i
 LikeOperator <- 'NOT'i? 'LIKE'i
 InOperator <- 'NOT'i? 'IN'i !'T'i # special handling to not match INTERSECT
 BooleanOperator <- ('OR'i !'D'i) / 'AND'i # special handling to not match ORDER BY
-ComparisionOperator <-  '=' / '<=' / '>=' / '<' / '>'
+ComparisonOperator <-  '=' / '<=' / '>=' / '<' / '>'
 WindowOperator <- 'OVER'i
 BetweenOperator <- 'BETWEEN'i
 
 Operator <-
+    NotOperator /
     ArithmeticOperator /
-    ComparisionOperator /
+    ComparisonOperator /
     BooleanOperator /
     LikeOperator /
     InOperator /
@@ -110,3 +106,410 @@ AliasedExpression <- Expression ('AS'i? Identifier)?
 %whitespace <- [ \t\n\r]*
 List(D) <- D (',' D)*
 Parens(D) <- '(' D ')'
+
+########################################
+#Generated code from this point onwards#
+########################################
+
+
+
+ReservedKeyword <-
+        'COLLATE'i /
+        'OFFSET'i /
+        'LIMIT'i /
+        'DEFAULT'i /
+        'UNION'i /
+        'WINDOW'i /
+        'DEFERRABLE'i /
+        'ALL'i /
+        'FOREIGN'i /
+        'ANALYSE'i /
+        'NOT'i /
+        'USING'i /
+        'AS'i /
+        'SHOW'i /
+        'OR'i /
+        'WITH'i /
+        'QUALIFY'i /
+        'COLUMN'i /
+        'CAST'i /
+        'GROUP'i /
+        'HAVING'i /
+        'ARRAY'i /
+        'UNIQUE'i /
+        'THEN'i /
+        'PIVOT_LONGER'i /
+        'CHECK'i /
+        'ASYMMETRIC'i /
+        'IN'i /
+        'ANALYZE'i /
+        'TRUE'i /
+        'DISTINCT'i /
+        'WHERE'i /
+        'INTERSECT'i /
+        'LATERAL'i /
+        'NULL'i /
+        'UNPIVOT'i /
+        'SUMMARIZE'i /
+        'END'i /
+        'ELSE'i /
+        'SYMMETRIC'i /
+        'RETURNING'i /
+        'LEADING'i /
+        'DO'i /
+        'ONLY'i /
+        'ASC'i /
+        'BOTH'i /
+        'CASE'i /
+        'TRAILING'i /
+        'GRANT'i /
+        'SELECT'i /
+        'TO'i /
+        'EXCEPT'i /
+        'WHEN'i /
+        'INTO'i /
+        'GRAPH_TABLE'i /
+        'TABLE'i /
+        'DESC'i /
+        'AND'i /
+        'PIVOT_WIDER'i /
+        'VARIADIC'i /
+        'ORDER'i /
+        'INITIALLY'i /
+        'CONSTRAINT'i /
+        'ANY'i /
+        'FALSE'i /
+        'CREATE'i /
+        'FROM'i /
+        'PRIMARY'i /
+        'PIVOT'i /
+        'FOR'i /
+        'FETCH'i /
+        'ON'i /
+        'SOME'i /
+        'DESCRIBE'i /
+        'PLACING'i /
+        'REFERENCES'i
+
+UnreservedKeyword <-
+        'LOCK'i /
+        'CHECKPOINT'i /
+        'PRESERVE'i /
+        'REFRESH'i /
+        'DOCUMENT'i /
+        'OWNER'i /
+        'INCREMENT'i /
+        'ESCAPE'i /
+        'DISABLE'i /
+        'DOUBLE'i /
+        'VARYING'i /
+        'OVERRIDING'i /
+        'CYCLE'i /
+        'WHITESPACE'i /
+        'ROWS'i /
+        'INSERT'i /
+        'LOCATION'i /
+        'RESPECT'i /
+        'READ'i /
+        'ATTACH'i /
+        'RESTART'i /
+        'VACUUM'i /
+        'COMMENTS'i /
+        'NOWAIT'i /
+        'PLANS'i /
+        'FILTER'i /
+        'SCROLL'i /
+        'YEARS'i /
+        'RECURSIVE'i /
+        'STATISTICS'i /
+        'SUBSCRIPTION'i /
+        'ISOLATION'i /
+        'DAYS'i /
+        'ROLLUP'i /
+        'METHOD'i /
+        'SNAPSHOT'i /
+        'AT'i /
+        'CLUSTER'i /
+        'WITHIN'i /
+        'EACH'i /
+        'IMPORT'i /
+        'UNBOUNDED'i /
+        'BY'i /
+        'PRAGMA'i /
+        'MONTH'i /
+        'BACKWARD'i /
+        'DROP'i /
+        'DATABASE'i /
+        'IF'i /
+        'OLD'i /
+        'PERSISTENT'i /
+        'INCLUDING'i /
+        'DATA'i /
+        'AGGREGATE'i /
+        'AFTER'i /
+        'REINDEX'i /
+        'DEFERRED'i /
+        'QUOTE'i /
+        'CALLED'i /
+        'BEGIN'i /
+        'VARIABLE'i /
+        'REFERENCING'i /
+        'OIDS'i /
+        'VIEW'i /
+        'PARALLEL'i /
+        'TRUSTED'i /
+        'HEADER'i /
+        'EVENT'i /
+        'XML'i /
+        'POLICY'i /
+        'NEXT'i /
+        'CONFIGURATION'i /
+        'DETACH'i /
+        'COMMITTED'i /
+        'MODE'i /
+        'ROLE'i /
+        'ORDINALITY'i /
+        'SCHEMAS'i /
+        'ENUM'i /
+        'DECLARE'i /
+        'SEQUENCES'i /
+        'USE'i /
+        'INSTEAD'i /
+        'SYSID'i /
+        'ENCRYPTED'i /
+        'WITHOUT'i /
+        'GLOBAL'i /
+        'USER'i /
+        'QUARTER'i /
+        'MILLENNIA'i /
+        'DECADE'i /
+        'OTHERS'i /
+        'MONTHS'i /
+        'MACRO'i /
+        'MAXVALUE'i /
+        'STANDALONE'i /
+        'CONSTRAINTS'i /
+        'UNENCRYPTED'i /
+        'VALID'i /
+        'WEEK'i /
+        'GRANTED'i /
+        'TABLESPACE'i /
+        'PREPARE'i /
+        'TRANSFORM'i /
+        'OFF'i /
+        'RESTRICT'i /
+        'INVOKER'i /
+        'REVOKE'i /
+        'REPLACE'i /
+        'LISTEN'i /
+        'CHAIN'i /
+        'OBJECT'i /
+        'INSENSITIVE'i /
+        'INSTALL'i /
+        'NULLS'i /
+        'TRANSACTION'i /
+        'MILLISECOND'i /
+        'NOTIFY'i /
+        'TEMPLATE'i /
+        'CONVERSION'i /
+        'EXTERNAL'i /
+        'RELEASE'i /
+        'LOCKED'i /
+        'OVER'i /
+        'JSON'i /
+        'MAPPING'i /
+        'SERIALIZABLE'i /
+        'EXECUTE'i /
+        'INDEX'i /
+        'ALSO'i /
+        'CURSOR'i /
+        'UPDATE'i /
+        'START'i /
+        'CASCADED'i /
+        'FORWARD'i /
+        'VALIDATE'i /
+        'OPERATOR'i /
+        'FORCE'i /
+        'SEQUENCE'i /
+        'ACTION'i /
+        'HOUR'i /
+        'ADD'i /
+        'SCHEMA'i /
+        'INDEXES'i /
+        'CONNECTION'i /
+        'LEVEL'i /
+        'NOTHING'i /
+        'LOCAL'i /
+        'PASSING'i /
+        'CHARACTERISTICS'i /
+        'TYPES'i /
+        'OPTION'i /
+        'RANGE'i /
+        'CLASS'i /
+        'MATERIALIZED'i /
+        'PUBLICATION'i /
+        'SAVEPOINT'i /
+        'DELETE'i /
+        'DAY'i /
+        'CENTURY'i /
+        'IMMEDIATE'i /
+        'UNLOGGED'i /
+        'DICTIONARY'i /
+        'LAST'i /
+        'PRECEDING'i /
+        'PROCEDURE'i /
+        'LEAKPROOF'i /
+        'RELATIVE'i /
+        'DEPENDS'i /
+        'STDIN'i /
+        'SERVER'i /
+        'SECURITY'i /
+        'STORED'i /
+        'TEXT'i /
+        'FIRST'i /
+        'DELIMITER'i /
+        'DISCARD'i /
+        'CONFLICT'i /
+        'OPTIONS'i /
+        'STABLE'i /
+        'ABORT'i /
+        'INLINE'i /
+        'CASCADE'i /
+        'IDENTITY'i /
+        'VERSION'i /
+        'PARTITION'i /
+        'DOMAIN'i /
+        'SESSION'i /
+        'SCOPE'i /
+        'SECONDS'i /
+        'LARGE'i /
+        'SETS'i /
+        'FAMILY'i /
+        'PREPARED'i /
+        'MILLISECONDS'i /
+        'VALUE'i /
+        'FUNCTION'i /
+        'NAME'i /
+        'ADMIN'i /
+        'CATALOG'i /
+        'BEFORE'i /
+        'LABEL'i /
+        'REPEATABLE'i /
+        'CONTENT'i /
+        'OWNED'i /
+        'STATEMENT'i /
+        'QUARTERS'i /
+        'UNCOMMITTED'i /
+        'RETURNS'i /
+        'PARSER'i /
+        'NO'i /
+        'SQL'i /
+        'MATCH'i /
+        'EXPLAIN'i /
+        'MICROSECOND'i /
+        'DELIMITERS'i /
+        'WORK'i /
+        'ATTRIBUTE'i /
+        'INHERITS'i /
+        'RECHECK'i /
+        'ASSIGNMENT'i /
+        'MINUTES'i /
+        'NAMES'i /
+        'INHERIT'i /
+        'COMPRESSION'i /
+        'VIRTUAL'i /
+        'CSV'i /
+        'ENCODING'i /
+        'PRIOR'i /
+        'EXPORT_STATE'i /
+        'COMMIT'i /
+        'MOVE'i /
+        'EXTENSION'i /
+        'IMMUTABLE'i /
+        'TABLES'i /
+        'YES'i /
+        'SEARCH'i /
+        'DEFAULTS'i /
+        'LANGUAGE'i /
+        'CALL'i /
+        'WEEKS'i /
+        'EXCLUDE'i /
+        'EXPORT'i /
+        'YEAR'i /
+        'VOLATILE'i /
+        'SECOND'i /
+        'EXCLUSIVE'i /
+        'TRIGGER'i /
+        'IGNORE'i /
+        'PERCENT'i /
+        'COPY'i /
+        'DEFINER'i /
+        'WRAPPER'i /
+        'PRIVILEGES'i /
+        'FUNCTIONS'i /
+        'UNTIL'i /
+        'DEALLOCATE'i /
+        'STRIP'i /
+        'SYSTEM'i /
+        'REASSIGN'i /
+        'DECADES'i /
+        'HOLD'i /
+        'PROCEDURAL'i /
+        'NEW'i /
+        'RULE'i /
+        'HANDLER'i /
+        'CUBE'i /
+        'WRITE'i /
+        'TRUNCATE'i /
+        'PROGRAM'i /
+        'ABSOLUTE'i /
+        'MINUTE'i /
+        'SHARE'i /
+        'IMPLICIT'i /
+        'REF'i /
+        'TEMP'i /
+        'ALWAYS'i /
+        'MINVALUE'i /
+        'ALTER'i /
+        'KEY'i /
+        'CACHE'i /
+        'REPLICA'i /
+        'SKIP'i /
+        'LOAD'i /
+        'MICROSECONDS'i /
+        'INPUT'i /
+        'INCLUDE'i /
+        'TEMPORARY'i /
+        'SET'i /
+        'PARTIAL'i /
+        'FOLLOWING'i /
+        'VALIDATOR'i /
+        'HOURS'i /
+        'STRICT'i /
+        'PASSWORD'i /
+        'CURRENT'i /
+        'LOGGED'i /
+        'TYPE'i /
+        'CONTINUE'i /
+        'ASSERTION'i /
+        'COMMENT'i /
+        'STDOUT'i /
+        'CENTURIES'i /
+        'ZONE'i /
+        'ROLLBACK'i /
+        'RESET'i /
+        'RENAME'i /
+        'OF'i /
+        'VIEWS'i /
+        'EXCLUDING'i /
+        'MILLENNIUM'i /
+        'ACCESS'i /
+        'CLOSE'i /
+        'SECRET'i /
+        'EXTENSIONS'i /
+        'STORAGE'i /
+        'UNLISTEN'i /
+        'UNKNOWN'i /
+        'ENABLE'i /
+        'SAMPLE'i /
+        'TIES'i
